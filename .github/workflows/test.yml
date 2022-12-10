@@ -99,15 +99,6 @@ jobs:
           key: ${{ runner.os }}-${{ env.userName }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
           restore-keys: |
             ${{ runner.os }}-${{ env.userName }}-
-      - name: CHANG Apk
-        working-directory: source/
-        run: |
-          #添加预置接口
-          sed -i "s|^\(create\).*\(0\)$|\1\(\'https:\/\/agit.ai\/hfr1107\/vvbox\/raw\/branch\/main\/beartv.json\', \2|" app/src/main/java/com/fongmi/android/tv/bean/Config.java
-          sed -i "s|^\(create\).*\(1\)$|\1\(\'https:\/\/agit.ai\/hfr1107\/vvbox\/raw\/branch\/main\/live\/zb.txt\', \2|" app/src/main/java/com/fongmi/android/tv/bean/Config.java
-          sed -i "s|^\(create\).*\(2\)$|\1\(\'https:\/\/tool.weetai.cn\/api\', \2|" app/src/main/java/com/fongmi/android/tv/bean/Config.java
-          #修改更新地址
-          sed -i "s#FongMi#hfr1107#g" app/src/main/java/com/fongmi/android/tv/api/Updater.java
       - name: Release Apk Sign
         working-directory: source/
         run: |
@@ -126,6 +117,10 @@ jobs:
           sed -i '$a\RELEASE_KEY_ALIAS=TVBoxOSC'            ./gradle.properties
           sed -i '$a\RELEASE_STORE_PASSWORD=TVBoxOSC'       ./gradle.properties
           sed -i '$a\RELEASE_KEY_PASSWORD=TVBoxOSC'         ./gradle.properties
+          sed -i "s|^\(create\).*\(0\)$|\1\(\'https:\/\/agit.ai\/hfr1107\/vvbox\/raw\/branch\/main\/beartv.json\', \2|" app/src/main/java/com/fongmi/android/tv/bean/Config.java
+          sed -i "s|^\(create\).*\(1\)$|\1\(\'https:\/\/agit.ai\/hfr1107\/vvbox\/raw\/branch\/main\/live\/zb.txt\', \2|" app/src/main/java/com/fongmi/android/tv/bean/Config.java
+          sed -i "s|^\(create\).*\(2\)$|\1\(\'https:\/\/tool.weetai.cn\/api\', \2|" app/src/main/java/com/fongmi/android/tv/bean/Config.java
+          sed -i "s#FongMi#hfr1107#g" app/src/main/java/com/fongmi/android/tv/api/Updater.java
       - name: Build With Gradle
         continue-on-error: true
         working-directory: source/
