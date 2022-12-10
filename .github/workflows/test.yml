@@ -117,10 +117,6 @@ jobs:
           sed -i '$a\RELEASE_KEY_ALIAS=TVBoxOSC'            ./gradle.properties
           sed -i '$a\RELEASE_STORE_PASSWORD=TVBoxOSC'       ./gradle.properties
           sed -i '$a\RELEASE_KEY_PASSWORD=TVBoxOSC'         ./gradle.properties
-          sed -i "s|^\(create\).*\(0\)$|\1\(\'https:\/\/agit.ai\/hfr1107\/vvbox\/raw\/branch\/main\/beartv.json\', \2|" app/src/main/java/com/fongmi/android/tv/bean/Config.java
-          sed -i "s|^\(create\).*\(1\)$|\1\(\'https:\/\/agit.ai\/hfr1107\/vvbox\/raw\/branch\/main\/live\/zb.txt\', \2|" app/src/main/java/com/fongmi/android/tv/bean/Config.java
-          sed -i "s|^\(create\).*\(2\)$|\1\(\'https:\/\/tool.weetai.cn\/api\', \2|" app/src/main/java/com/fongmi/android/tv/bean/Config.java
-          sed -i "s#FongMi#hfr1107#g" app/src/main/java/com/fongmi/android/tv/api/Updater.java
       - name: Build With Gradle
         continue-on-error: true
         working-directory: source/
@@ -169,6 +165,20 @@ jobs:
             apk/*-source.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Post To Telegram
+        working-directory: apk/
+        run: |
+          if [ -n "${{ secrets.CHANNEL_ID }}" ] && [ -n "${{ secrets.BOT_TOKEN }}" ]; then
+            export apk1=$(find ~ -name "*leanback*.apk")
+            export apk2=$(find ~ -name "*mobile*.apk")
+            export sourceCode=$(find ~ -name "*-source.zip")
+            if [ -s "$apk2" ]; then
+              curl -v "https://api.telegram.org/bot${{ secrets.BOT_TOKEN }}/sendMediaGroup?chat_id=${{ secrets.CHANNEL_ID }}&media=%5B%7B%22type%22%3A%22document%22%2C%20%22media%22%3A%22attach%3A%2F%2Fapk1%22%7D%2C%7B%22type%22%3A%22document%22%2C%20%22media%22%3A%22attach%3A%2F%2Fapk2%22%7D%2C%7B%22type%22%3A%22document%22%2C%20%22media%22%3A%22attach%3A%2F%2FsourceCode%22%2C%20%22caption%22%3A%22Commit%3A%20${{ env.commit }}%0AChangelog%3A%0A${{ env.ESCAPED }}%22%2C%22parse_mode%22%3A%20%22Markdown%22%7D%5D" -F apk1="@$apk1" -F apk2="@$apk2" -F sourceCode="@$sourceCode"
+            else
+              curl -v "https://api.telegram.org/bot${{ secrets.BOT_TOKEN }}/sendMediaGroup?chat_id=${{ secrets.CHANNEL_ID }}&media=%5B%7B%22type%22%3A%22document%22%2C%20%22media%22%3A%22attach%3A%2F%2Fapk1%22%7D%2C%7B%22type%22%3A%22document%22%2C%20%22media%22%3A%22attach%3A%2F%2FsourceCode%22%2C%20%22caption%22%3A%22Commit%3A%20${{ env.commit }}%0AChangelog%3A%0A${{ env.ESCAPED }}%22%2C%22parse_mode%22%3A%20%22Markdown%22%7D%5D" -F apk1="@$apk1" -F sourceCode="@$sourceCode"
+            fi
+          fi
+      - name: Push to master
         run: |
           rm -rf apk/
           sed -i "/Updated Commit/c\\+ Updated Commit: ${{ env.commit }}" README.md
